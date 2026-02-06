@@ -48,12 +48,18 @@ class OpenAITTSConfig(AsyncTTS2HttpConfig):
 
         # Set endpoint URL from base_url if url is not provided
         if not self.url:
-            base_url = self.params.get("base_url", "https://api.openai.com/v1")
-            # Remove trailing slash from base_url
-            base_url = base_url.rstrip("/")
-            self.url = f"{base_url}/audio/speech"
-            # Remove base_url from params since it's been used to set url
-            self.params.pop("base_url", None)
+            if "url" in self.params:
+                self.url = self.params["url"]
+                self.params.pop("url", None)  # pylint: disable=no-member
+            else:
+                base_url = self.params.get(  # pylint: disable=no-member
+                    "base_url", "https://api.openai.com/v1"
+                )
+                # Remove trailing slash from base_url
+                base_url = base_url.rstrip("/")
+                self.url = f"{base_url}/audio/speech"
+                # Remove base_url from params since it's been used to set url
+                self.params.pop("base_url", None)  # pylint: disable=no-member
 
     def to_str(self, sensitive_handling: bool = True) -> str:
         """Convert config to string with optional sensitive data handling."""
@@ -72,7 +78,7 @@ class OpenAITTSConfig(AsyncTTS2HttpConfig):
         """Validate OpenAI-specific configuration."""
         if (
             "api_key" not in self.params or not self.params["api_key"]
-        ) and self.headers.get("Authorization") is None:
+        ) and self.headers.get("Authorization") is None:  # pylint: disable=no-member
             raise ValueError(
                 "API key or Authorization header is required for OpenAI TTS"
             )
